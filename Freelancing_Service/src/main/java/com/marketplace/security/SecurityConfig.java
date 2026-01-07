@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/client/**").hasRole("CLIENT")
                 .requestMatchers("/api/jobs/open").permitAll() // Anyone can see open jobs
                 .requestMatchers("/api/jobs/search").permitAll()//Anyone can search
+                .requestMatchers("/api/proposals/**").authenticated() // All proposal endpoints need auth
                 .requestMatchers("/api/jobs/**").hasRole("CLIENT") //Only clients can post/edit jobs
                 .anyRequest().authenticated()
             )

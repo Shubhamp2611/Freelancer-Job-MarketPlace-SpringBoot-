@@ -33,6 +33,10 @@ public class SecurityUtil {
 		return getCurrentUser().getId();
 	}
 	
+    public boolean isClient() {
+        return getCurrentUser().getRole() == com.marketplace.user.Role.CLIENT;
+    }
+	
 	public boolean isFreelancer() {
 		return getCurrentUser().getRole() == com.marketplace.user.Role.FREELANCER;
 	}

@@ -99,8 +99,7 @@ public class JobService {
         job.setSkillsRequired(jobRequest.getSkillsRequired());
         job.setDeadline(jobRequest.getDeadline());
         
-        Job updatedJob = new Job();
-        updatedJob = jobRepository.save(job);
+        Job updatedJob = jobRepository.save(job);
         return convertToDTO(updatedJob);
 	}
 

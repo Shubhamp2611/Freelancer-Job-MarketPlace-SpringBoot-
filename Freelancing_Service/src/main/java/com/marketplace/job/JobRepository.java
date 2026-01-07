@@ -24,10 +24,10 @@ public interface JobRepository extends JpaRepository<Job, Long>{
 	List<Job> findByAssignedFreelancer(User freelancer);
 	
     // Search jobs by title or description
-	@Query("SELECT j FROM j WHERE j.status = 'OPEN' AND "+
-	"(LOWER(j.title) LIKE LOWER(CONCAT('%', :keyword,'%')) OR "+
-	"LOWER(j.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-	Page<Job> searchJobs(@Param("keyword") String keyword, Pageable pageable);
+	@Query("SELECT j FROM Job j WHERE j.status = 'OPEN' AND "+
+		    "(LOWER(j.title) LIKE LOWER(CONCAT('%', :keyword,'%')) OR "+
+		    "LOWER(j.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+		Page<Job> searchJobs(@Param("keyword") String keyword, Pageable pageable);
 	
     // Find jobs by skills (comma-separated)
     @Query("SELECT j FROM Job j WHERE j.status = 'OPEN' AND " +
