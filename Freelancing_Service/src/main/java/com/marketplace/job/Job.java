@@ -47,6 +47,11 @@ public class Job {
 	@JoinColumn(name = "client_id", nullable = false)
 	private User assignedFreelancer;
 	
+	 @ManyToOne(fetch = FetchType.LAZY)
+	 @JoinColumn(name = "client_id", nullable = false)
+	 private User client;
+	
+
 	private String skillsRequired;
 	
 	@Column(nullable = false)
@@ -71,7 +76,7 @@ public class Job {
 	}
 
 	public Job(String title, String description, JobStatus status, JobType type, BigDecimal budget,
-			Integer estimatedDuration, User assignedFreelancer, String skillsRequired, LocalDateTime createdAt,
+			Integer estimatedDuration, User client, String skillsRequired, LocalDateTime createdAt,
 			LocalDateTime deadline) {
 		super();
 		this.title = title;
@@ -80,12 +85,21 @@ public class Job {
 		this.type = type;
 		this.budget = budget;
 		this.estimatedDuration = estimatedDuration;
-		this.assignedFreelancer = assignedFreelancer;
+		this.client = client;
 		this.skillsRequired = skillsRequired;
 		this.createdAt = createdAt;
 		this.deadline = deadline;
 	}
 
+	public User getClient() {
+		return client;
+	}
+
+	public void setClient(User client) {
+		this.client = client;
+	}
+
+	
 	public long getId() {
 		return id;
 	}
