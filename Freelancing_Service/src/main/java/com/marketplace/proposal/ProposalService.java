@@ -5,6 +5,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.marketplace.contract.ContractResponseDTO;
+import com.marketplace.contract.ContractService;
+import com.marketplace.contract.CreateContractDTO;
 import com.marketplace.job.Job;
 import com.marketplace.job.JobRepository;
 import com.marketplace.job.JobStatus;
@@ -20,13 +23,15 @@ public class ProposalService {
 	private final ProposalRepository proposalRepository;
 	private final JobRepository jobRepository;
 	private final UserRepository userRepository;
+	private final ContractService contractService;
 	
 	public ProposalService(ProposalRepository proposalRepository, JobRepository jobRepository,
-			UserRepository userRepository) {
+			UserRepository userRepository, ContractService contractService) {
 		super();
 		this.proposalRepository = proposalRepository;
 		this.jobRepository = jobRepository;
 		this.userRepository = userRepository;
+		this.contractService = contractService;
 	}
 	
 	public ProposalResponseDTO submitProposal(ProposalRequestDTO request, Long freelancerId) {
@@ -220,4 +225,17 @@ public class ProposalService {
 		
         return dto;
 	}	
+	
+	// In ProposalService.java, add this method:
+	public ContractResponseDTO acceptProposalAndCreateContract(Long proposalId, Long clientId, 
+	                                                          String message, CreateContractDTO contractRequest) {
+	    // First accept the proposal (existing logic)
+	    @SuppressWarnings("unused")
+		ProposalResponseDTO acceptedProposal = acceptProposal(proposalId, clientId, message);
+	    
+	    // Then create contract
+	    ContractResponseDTO contract = contractService.createContract(contractRequest, clientId);
+	    
+	    return contract;
+	}
 }

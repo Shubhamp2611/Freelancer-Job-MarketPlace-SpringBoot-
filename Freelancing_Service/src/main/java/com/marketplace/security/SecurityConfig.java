@@ -26,20 +26,22 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/jobs/open").permitAll()
+                .requestMatchers("/api/jobs/search").permitAll()
+                .requestMatchers("/api/jobs/{id}").permitAll()
+                .requestMatchers("/api/jobs/**").hasRole("CLIENT")
+                .requestMatchers("/api/proposals/**").authenticated()
+                .requestMatchers("/api/contracts/**").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/freelancer/**").hasRole("FREELANCER")
                 .requestMatchers("/api/client/**").hasRole("CLIENT")
-                .requestMatchers("/api/jobs/open").permitAll() // Anyone can see open jobs
-                .requestMatchers("/api/jobs/search").permitAll()//Anyone can search
-                .requestMatchers("/api/proposals/**").authenticated() // All proposal endpoints need auth
-                .requestMatchers("/api/jobs/**").hasRole("CLIENT") //Only clients can post/edit jobs
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
+    
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
