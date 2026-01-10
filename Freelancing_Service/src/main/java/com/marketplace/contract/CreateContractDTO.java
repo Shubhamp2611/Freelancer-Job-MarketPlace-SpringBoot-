@@ -19,7 +19,7 @@ public class CreateContractDTO {
 	private String description;
 	
     @NotNull(message = "Due date is required")
-    //@FutureOrPresent(message = "Due date must be in the future")
+    @FutureOrPresent(message = "Due date must be in the future")
     private LocalDateTime dueDate;
 	
 	@NotNull(message = "Start date is required")
