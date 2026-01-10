@@ -10,14 +10,13 @@ public class ContractResponseDTO {
 	private Long jobId;
 	private String jobTitle;
     private Long clientId;
-	private Long clientAt;
 	private String clientName;
 	private Long freelancerId;
 	private String freelancerName;
 	private String title;
 	private String description;
 	private ContractStatus status;
-	private BigDecimal totalAmout;
+	private BigDecimal totalAmount;
 	private BigDecimal platformFee;
 	private BigDecimal freelancerEarnings;
 	private LocalDateTime startDate;
@@ -55,12 +54,6 @@ public class ContractResponseDTO {
 	public void setJobTitle(String jobTitle) {
 		this.jobTitle = jobTitle;
 	}
-	public Long getClientAt() {
-		return clientAt;
-	}
-	public void setClientAt(Long clientAt) {
-		this.clientAt = clientAt;
-	}
 	public String getClientName() {
 		return clientName;
 	}
@@ -97,11 +90,11 @@ public class ContractResponseDTO {
 	public void setStatus(ContractStatus status) {
 		this.status = status;
 	}
-	public BigDecimal getTotalAmout() {
-		return totalAmout;
+	public BigDecimal getTotalAmount() {
+		return totalAmount;
 	}
-	public void setTotalAmout(BigDecimal totalAmout) {
-		this.totalAmout = totalAmout;
+	public void setTotalAmount(BigDecimal totalAmount) {
+		this.totalAmount = totalAmount;
 	}
 	public BigDecimal getPlatformFee() {
 		return platformFee;

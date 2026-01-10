@@ -3,6 +3,8 @@ package com.marketplace.contract;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.marketplace.job.Job;
 import com.marketplace.proposal.Proposal;
 import com.marketplace.user.User;
@@ -17,7 +19,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -29,7 +30,7 @@ public class Contract {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@OneToMany(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "proposal_id", nullable = false, unique = true)
 	private Proposal proposal;
 	
@@ -65,17 +66,35 @@ public class Contract {
     private BigDecimal freelancerEarnings; // Total minus platform fee
 	
 	@Column(nullable = false)
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	@JsonProperty("startDate")
 	private LocalDateTime startDate;
 	
+	// MISSING FIELD: Add this!
+	@Column(name = "due_date", nullable = false)
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	@JsonProperty("dueDate")  // This tells Jackson to map JSON's "dueDate" to this field
+	private LocalDateTime dueDate;
+	
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	@JsonProperty("endDate")
 	private LocalDateTime endDate;
 	
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	@JsonProperty("deadline")
 	private LocalDateTime deadline;
 	
 	@Column(nullable = false)
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	@JsonProperty("createdAt")
 	private LocalDateTime createdAt = LocalDateTime.now();
 	
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	@JsonProperty("completedAt")
 	private LocalDateTime completedAt;
 	
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	@JsonProperty("cancelledAt")
 	private LocalDateTime cancelledAt;
 	
 	@Column(columnDefinition = "TEXT")
@@ -94,6 +113,8 @@ public class Contract {
 	@Column(nullable = false)
 	private Boolean escrowFunded = false;
 	
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	@JsonProperty("escrowFundedAt")
 	private LocalDateTime escrowFundedAt;
 	
 	private BigDecimal amountPaidToFreelancer = BigDecimal.ZERO;
@@ -105,7 +126,6 @@ public class Contract {
 
 	public Contract() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Long getId() {
@@ -176,10 +196,6 @@ public class Contract {
 		return totalAmount;
 	}
 
-	public void setTotalAmount(BigDecimal totalAmount) {
-		this.totalAmount = totalAmount;
-	}
-
 	public BigDecimal getPlatformFee() {
 		return platformFee;
 	}
@@ -199,6 +215,22 @@ public class Contract {
 	public LocalDateTime getStartDate() {
 		return startDate;
 	}
+	
+	public void setTotalAmount(BigDecimal totalAmount) {
+	    this.totalAmount = totalAmount;
+	    // Auto-calculate platform fee (10%)
+	    this.platformFee = totalAmount.multiply(new BigDecimal("0.10"));
+	    this.freelancerEarnings = totalAmount.subtract(platformFee);
+    }
+    
+    // ADD THIS MISSING GETTER/SETTER
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+    
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
+    }
 
 	public void setStartDate(LocalDateTime startDate) {
 		this.startDate = startDate;
@@ -267,8 +299,9 @@ public class Contract {
 		return freelancerRating;
 	}
 
+	// FIX THIS METHOD - was checking clientRating instead of freelancerRating
 	public void setFreelancerRating(Integer freelancerRating) {
-		if(clientRating != null && (clientRating < 1 || clientRating > 5)) {
+		if(freelancerRating != null && (freelancerRating < 1 || freelancerRating > 5)) {
 			throw new IllegalArgumentException("Rating must be between 1 and 5");
 		}
 		this.freelancerRating = freelancerRating;

@@ -1,6 +1,7 @@
 package com.marketplace.job;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -36,4 +37,28 @@ public interface JobRepository extends JpaRepository<Job, Long>{
     
     // Find jobs within budget range
     List<Job> findByStatusAndBudgetBetween(JobStatus status, BigDecimal minBudget, BigDecimal maxBudget);
+
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.status = :status")
+    Long countByStatus(@Param("status") JobStatus status);
+
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.createdAt >= :date")
+    Long countByCreatedAtAfter(@Param("date") LocalDateTime date);
+    
+ // In JobRepository.java
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.status = 'OPEN'")
+    Long countOpenJobs();
+
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.status = 'COMPLETED'")
+    Long countCompletedJobs();
+
+    // In ProposalRepository.java
+    @Query("SELECT COUNT(p) FROM Proposal p WHERE p.status = 'ACCEPTED'")
+    Long countAcceptedProposals();
+
+    // In ContractRepository.java
+    @Query("SELECT COUNT(c) FROM Contract c WHERE c.status = 'ACTIVE'")
+    Long countActiveContracts();
+
+    @Query("SELECT COUNT(c) FROM Contract c WHERE c.status = 'COMPLETED'")
+    Long countCompletedContracts();
 }

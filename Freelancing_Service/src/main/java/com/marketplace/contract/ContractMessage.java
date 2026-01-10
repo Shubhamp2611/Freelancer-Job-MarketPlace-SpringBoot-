@@ -29,7 +29,7 @@ public class ContractMessage {
     private Contract contract;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
+    @JoinColumn(name = "sender_id", nullable = true)  // Changed to true
     private User sender;
     
     @Column(columnDefinition = "TEXT", nullable = false)

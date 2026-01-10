@@ -3,6 +3,8 @@ package com.marketplace.contract;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,10 +54,10 @@ public class ContractController {
     
     // GET: Get my contracts
     @GetMapping("/my-contracts")
-    public ResponseEntity<List<ContractResponseDTO>> getMyContract(){
-    	Long userId = securityUtil.getCurrentUserId();
-    	List<ContractResponseDTO> contracts = contractService.getActiveContracts(userId);
-    	return ResponseEntity.ok(contracts);
+    public ResponseEntity<List<ContractResponseDTO>> getMyContracts() {
+        Long userId = securityUtil.getCurrentUserId();
+        List<ContractResponseDTO> contracts = contractService.getMyContracts(userId);
+        return ResponseEntity.ok(contracts);
     }
     
     // PUT: Fund escrow (CLIENT only)
@@ -164,5 +166,15 @@ public class ContractController {
         Long userId = securityUtil.getCurrentUserId();
         List<ContractMessage> messages = contractService.getMessages(contractId, userId);
         return ResponseEntity.ok(messages);
+    }
+    
+ // GET: Get milestones for a contract
+    @GetMapping("/{contractId}/milestones")
+    public ResponseEntity<List<MilestoneResponseDTO>> getMilestones(@PathVariable Long contractId) {
+        Long userId = securityUtil.getCurrentUserId();
+        
+        // You need to add this method to ContractService
+        List<MilestoneResponseDTO> milestones = contractService.getMilestones(contractId, userId);
+        return ResponseEntity.ok(milestones);
     }
 }

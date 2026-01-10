@@ -1,6 +1,5 @@
 package com.marketplace.contract;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,12 +18,16 @@ public class CreateContractDTO {
 	@NotBlank(message = "Description is required")
 	private String description;
 	
+    @NotNull(message = "Due date is required")
+    //@FutureOrPresent(message = "Due date must be in the future")
+    private LocalDateTime dueDate;
+	
 	@NotNull(message = "Start date is required")
-	@FutureOrPresent(message = "Start date must be today or in the future")
+	//@FutureOrPresent(message = "Start date must be today or in the future")
 	private LocalDateTime startDate;
 	
-	@NotNull(message = "Deadline is required")
-	@FutureOrPresent(message = "Deadline must be in the future")
+	//@NotNull(message = "Deadline is required")
+	//@FutureOrPresent(message = "Deadline must be in the future")
 	private LocalDateTime deadline;
 	
 	private List<MilestoneRequestDTO> milestones;
@@ -68,6 +71,14 @@ public class CreateContractDTO {
 	public void setDeadline(LocalDateTime deadline) {
 		this.deadline = deadline;
 	}
+	
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+    
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
+    }
 
 	public List<MilestoneRequestDTO> getMilestones() {
 		return milestones;

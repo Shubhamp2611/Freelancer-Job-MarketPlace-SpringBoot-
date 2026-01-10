@@ -1,6 +1,6 @@
 package com.marketplace.auth;
 
-import jakarta.transaction.Transactional;  // Add this import
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -13,7 +13,6 @@ import com.marketplace.user.User;
 import com.marketplace.user.UserRepository;
 
 @Service
-@Transactional  // Add this annotation
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -33,24 +32,30 @@ public class AuthService {
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
-    @Transactional  // Add to each method
+    @Transactional
     public AuthResponse register(RegistrationRequest request) {
+        System.out.println("=== Starting registration ===");
+        
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
 
+        // Create user
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole() : Role.USER);
 
-        userRepository.save(user);
+        System.out.println("Saving user...");
+        User savedUser = userRepository.save(user);
+        System.out.println("User saved with ID: " + savedUser.getId());
 
-        return generateTokens(user);
+        // Generate tokens
+        return generateTokens(savedUser);
     }
 
-    @Transactional  // Add to each method
+    @Transactional
     public AuthResponse login(AuthRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -62,7 +67,33 @@ public class AuthService {
         return generateTokens(user);
     }
 
-    @Transactional  // Add to each method
+    @Transactional
+    private AuthResponse generateTokens(User user) {
+        System.out.println("Generating tokens for user ID: " + user.getId());
+        
+        String accessToken = jwtUtil.generateToken(user.getEmail());
+
+        // Create refresh token
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiryDate(Instant.now().plusMillis(REFRESH_TOKEN_DURATION_MS));
+
+        // Remove old tokens
+        try {
+            refreshTokenRepository.deleteByUser(user);
+        } catch (Exception e) {
+            System.out.println("No old tokens to delete: " + e.getMessage());
+        }
+        
+        // Save refresh token
+        RefreshToken savedToken = refreshTokenRepository.save(refreshToken);
+        System.out.println("Refresh token saved with ID: " + savedToken.getId());
+
+        return new AuthResponse(accessToken, refreshToken.getToken(), user.getEmail());
+    }
+
+    @Transactional
     public AuthResponse refreshToken(String refreshToken) {
         RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new RuntimeException("Refresh token not found"));
@@ -74,21 +105,5 @@ public class AuthService {
 
         String newAccessToken = jwtUtil.generateToken(tokenEntity.getUser().getEmail());
         return new AuthResponse(newAccessToken, refreshToken, tokenEntity.getUser().getEmail());
-    }
-
-    @Transactional  // Add to each method
-    private AuthResponse generateTokens(User user) {
-        String accessToken = jwtUtil.generateToken(user.getEmail());
-
-        // create refresh token
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(user);
-        refreshToken.setToken(UUID.randomUUID().toString());
-        refreshToken.setExpiryDate(Instant.now().plusMillis(REFRESH_TOKEN_DURATION_MS));
-
-        refreshTokenRepository.deleteByUser(user); // remove old token
-        refreshTokenRepository.save(refreshToken);
-
-        return new AuthResponse(accessToken, refreshToken.getToken(), user.getEmail());
     }
 }

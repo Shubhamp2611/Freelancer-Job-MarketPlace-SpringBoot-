@@ -74,7 +74,7 @@ public class ContractService {
         contract.setDescription(request.getDescription());
         contract.setTotalAmount(proposal.getProposedPrice());
         contract.setStartDate(request.getStartDate());
-        contract.setDeadline(request.getDeadline());
+        contract.setDueDate(request.getDueDate());
         contract.setStatus(ContractStatus.ACTIVE);
         
         Contract savedContract = contractRepository.save(contract);
@@ -155,6 +155,7 @@ public class ContractService {
         // In real implementation, integrate with payment gateway
         // For now, just mark as funded
         contract.setEscrowFunded(true);
+        contract.setAmountInEscrow(contract.getTotalAmount()); // ADD THIS LINE
         
         Contract savedContract = contractRepository.save(contract);
         
@@ -163,6 +164,13 @@ public class ContractService {
         createSystemMessage(savedContract, "Funds: $" + savedContract.getTotalAmount() + 
                               " (Freelancer earnings: $" + savedContract.getFreelancerEarnings() + 
                               ", Platform fee: $" + savedContract.getPlatformFee() + ")");
+        
+        List<Milestone> milestones = milestoneRepository.findByContractOrderBySequenceAsc(contract);
+        if (!milestones.isEmpty()) {
+            Milestone firstMilestone = milestones.get(0);
+            firstMilestone.setStatus(MilestoneStatus.IN_PROGRESS);
+            milestoneRepository.save(firstMilestone);
+        }
         
         return convertToDTO(savedContract);
     }
@@ -216,16 +224,35 @@ public class ContractService {
         milestone.setStatus(MilestoneStatus.APPROVED);
         milestone.setClientFeedback(feedback);
         
-        // Release payment to freelancer
-        BigDecimal newPaidAmount = contract.getAmountPaidToFreelancer().add(milestone.getAmount());
+        // FIX 1: Calculate with platform fee deduction
+        BigDecimal platformFee = milestone.getAmount().multiply(new BigDecimal("0.10"));
+        BigDecimal freelancerAmount = milestone.getAmount().subtract(platformFee);
+        
+        BigDecimal newPaidAmount = contract.getAmountPaidToFreelancer().add(freelancerAmount);
+        BigDecimal newEscrowAmount = contract.getAmountInEscrow().subtract(milestone.getAmount());
+        
         contract.setAmountPaidToFreelancer(newPaidAmount);
+        contract.setAmountInEscrow(newEscrowAmount);
         
         milestoneRepository.save(milestone);
         Contract savedContract = contractRepository.save(contract);
         
-        // Create system message
+        // FIX 3: Start next milestone automatically
+        List<Milestone> allMilestones = milestoneRepository.findByContractOrderBySequenceAsc(contract);
+        for (int i = 0; i < allMilestones.size(); i++) {
+            if (allMilestones.get(i).getId().equals(milestoneId) && i + 1 < allMilestones.size()) {
+                Milestone nextMilestone = allMilestones.get(i + 1);
+                if (nextMilestone.getStatus() == MilestoneStatus.PENDING) {
+                    nextMilestone.setStatus(MilestoneStatus.IN_PROGRESS);
+                    milestoneRepository.save(nextMilestone);
+                }
+                break;
+            }
+        }
+        
         createSystemMessage(savedContract, "Milestone approved: " + milestone.getTitle() + 
-                              " ($" + milestone.getAmount() + " released to freelancer)");
+                              " ($" + freelancerAmount + " released to freelancer, $" + 
+                              platformFee + " platform fee)");
         
         return convertToDTO(savedContract);
     }
@@ -263,11 +290,12 @@ public class ContractService {
             throw new RuntimeException("Only the client can complete the contract");
         }
         
-        // Check if all milestones are completed
+     // Check if all milestones are completed
         List<Milestone> milestones = milestoneRepository.findByContract(contract);
         boolean allMilestonesCompleted = milestones.stream()
                 .allMatch(m -> m.getStatus() == MilestoneStatus.PAID || 
-                              m.getStatus() == MilestoneStatus.COMPLETED);
+                              m.getStatus() == MilestoneStatus.COMPLETED ||
+                              m.getStatus() == MilestoneStatus.APPROVED); // ADD THIS
         
         if (!allMilestonesCompleted) {
             throw new RuntimeException("Cannot complete contract with pending milestones");
@@ -289,6 +317,8 @@ public class ContractService {
         
         return convertToDTO(savedContract);
     }
+    
+    
     
     // Submit review (freelancer action)
     public ContractResponseDTO submitReview(Long contractId, Long freelancerId, 
@@ -342,7 +372,7 @@ public class ContractService {
             throw new RuntimeException("You cannot view messages for this contract");
         }
         
-        return messageRepository.findByContractOrderBySentAtAsc(contract);
+        return messageRepository.findByContractOrderBySendAtAsc(contract);
     }
     
     // Helper methods
@@ -376,7 +406,7 @@ public class ContractService {
         milestone.setTitle("Complete Project");
         milestone.setDescription("Complete all project deliverables");
         milestone.setAmount(contract.getTotalAmount());
-        milestone.setDueDate(contract.getDeadline());
+        milestone.setDueDate(contract.getDueDate());
         milestone.setSequence(1);
         milestone.setStatus(MilestoneStatus.PENDING);
         
@@ -384,12 +414,55 @@ public class ContractService {
     }
     
     private void createSystemMessage(Contract contract, String message) {
-        ContractMessage systemMessage = new ContractMessage();
-        systemMessage.setContract(contract);
-        systemMessage.setMessage(message);
-        systemMessage.setType(MessageType.SYSTEM);
+        try {
+            ContractMessage systemMessage = new ContractMessage();
+            systemMessage.setContract(contract);
+            systemMessage.setMessage(message);
+            systemMessage.setType(MessageType.SYSTEM);
+            
+            // ALWAYS set a sender - use contract client
+            systemMessage.setSender(contract.getClient());
+            
+            messageRepository.save(systemMessage);
+        } catch (Exception e) {
+            // If system message fails, just log it but don't break the main flow
+            System.out.println("System message failed (non-critical): " + e.getMessage());
+        }
+    }
+    
+ // Add to ContractService class
+    public List<MilestoneResponseDTO> getMilestones(Long contractId, Long userId) {
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
         
-        messageRepository.save(systemMessage);
+        // Verify user is part of the contract
+        if (!contract.getClient().getId().equals(userId) && 
+            !contract.getFreelancer().getId().equals(userId)) {
+            throw new RuntimeException("You don't have permission to view milestones");
+        }
+        
+        List<Milestone> milestones = milestoneRepository.findByContractOrderBySequenceAsc(contract);
+        
+        return milestones.stream()
+                .map(this::convertMilestoneToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private MilestoneResponseDTO convertMilestoneToDTO(Milestone milestone) {
+        MilestoneResponseDTO dto = new MilestoneResponseDTO();
+        dto.setId(milestone.getId());
+        dto.setTitle(milestone.getTitle());
+        dto.setDescription(milestone.getDescription());
+        dto.setAmount(milestone.getAmount());
+        dto.setStatus(milestone.getStatus());
+        dto.setDueDate(milestone.getDueDate());
+        dto.setCompletedAt(milestone.getCompletedAt());
+        dto.setPaidAt(milestone.getPaidAt());
+        dto.setDeliverables(milestone.getDeliverables());
+        dto.setClientFeedback(milestone.getClientFeedback());
+        dto.setSequence(milestone.getSequence());
+        
+        return dto;
     }
     
     private ContractResponseDTO convertToDTO(Contract contract) {
@@ -405,12 +478,12 @@ public class ContractService {
         dto.setTitle(contract.getTitle());
         dto.setDescription(contract.getDescription());
         dto.setStatus(contract.getStatus());
-        dto.setTotalAmout(contract.getTotalAmount());
+        dto.setTotalAmount(contract.getTotalAmount());
         dto.setPlatformFee(contract.getPlatformFee());
         dto.setFreelancerEarnings(contract.getFreelancerEarnings());
         dto.setStartDate(contract.getStartDate());
         dto.setEndDate(contract.getEndDate());
-        dto.setDeadline(contract.getDeadline());
+        dto.setDeadline(contract.getDueDate());
         dto.setCreatedAt(contract.getCreatedAt());
         dto.setEscrowFunded(contract.getEscrowFunded());
         dto.setAmountPaidToFreelancer(contract.getAmountPaidToFreelancer());

@@ -178,7 +178,7 @@ public class ProposalService {
 			throw new RuntimeException("This proposal is no longer availble");
 		}
 		
-		proposal.setStatus(ProposalStatus.PENDING);
+		proposal.setStatus(ProposalStatus.REJECTED);
 		proposal.setClientMessage(message);
 		
 		Proposal savedProposal = proposalRepository.save(proposal);
@@ -238,4 +238,22 @@ public class ProposalService {
 	    
 	    return contract;
 	}
+
+	public List<ProposalResponseDTO> getProposalsByFreelancer(String username) {
+
+	    User freelancer = userRepository.findByEmail(username)
+	            .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+
+	    // Verify role
+	    if (freelancer.getRole() != com.marketplace.user.Role.FREELANCER) {
+	        throw new RuntimeException("Only freelancers can view their proposals");
+	    }
+
+	    List<Proposal> proposals = proposalRepository.findByFreelancer(freelancer);
+
+	    return proposals.stream()
+	            .map(this::convertToDTO)
+	            .collect(Collectors.toList());
+	}
+
 }

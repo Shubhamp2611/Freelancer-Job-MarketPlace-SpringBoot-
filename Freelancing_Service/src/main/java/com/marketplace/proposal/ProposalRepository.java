@@ -42,5 +42,7 @@ public interface ProposalRepository extends JpaRepository<Proposal, Long>{
     //Find all proposals for jobs posted by a specific client
     @Query("SELECT p FROM Proposal p WHERE p.job.client.id = :clientId")
     List<Proposal> findProposalsForClientJobs(@Param("clientId") Long clientId);
-	
+
+    @Query("SELECT COUNT(p) FROM Proposal p WHERE p.status = :status")
+    Long countByStatus(@Param("status") ProposalStatus status);	
 }

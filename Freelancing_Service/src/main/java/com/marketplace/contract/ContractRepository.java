@@ -1,5 +1,6 @@
 package com.marketplace.contract;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,4 +37,10 @@ public interface ContractRepository extends JpaRepository<Contract, Long>{
     //Count contracts by status for user
     @Query("SELECT COUNT(c) FROM Contract c WHERE (c.client = :user OR c.freelancer = :user) AND c.status = :status")
     Long countByUserAndStatus(@Param("user") User user, @Param("status") ContractStatus status);
+
+    @Query("SELECT COUNT(c) FROM Contract c WHERE c.status = :status")
+    Long countByStatus(@Param("status") ContractStatus status);
+
+    @Query("SELECT COUNT(c) FROM Contract c WHERE c.createdAt >= :date")
+    Long countByCreatedAtAfter(@Param("date") LocalDateTime date);
 }
