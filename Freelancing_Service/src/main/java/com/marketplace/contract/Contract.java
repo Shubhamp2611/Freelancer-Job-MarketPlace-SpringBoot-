@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.marketplace.job.Job;
 import com.marketplace.proposal.Proposal;
@@ -23,6 +24,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "contracts")
 public class Contract {
 
@@ -71,7 +73,7 @@ public class Contract {
 	private LocalDateTime startDate;
 	
 	// MISSING FIELD: Add this!
-	@Column(name = "due_date", nullable = false)
+	@Column(name = "due_date")
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	@JsonProperty("dueDate")  // This tells Jackson to map JSON's "dueDate" to this field
 	private LocalDateTime dueDate;
