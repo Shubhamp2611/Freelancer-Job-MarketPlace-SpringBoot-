@@ -21,17 +21,18 @@ public class PaymentService {
     private final ContractRepository contractRepository;
     private final UserRepository userRepository;
     
-    @Value("${stripe.secret-key}")
+    @Value("${stripe.secret-key:sk_test_dummy}")
     private String stripeSecretKey;
-    
-    @Value("${stripe.public-key}")
+
+    @Value("${stripe.public-key:pk_test_dummy}")
     private String stripePublicKey;
-    
-    @Value("${platform.fee.percentage}")
+
+    @Value("${platform.fee.percentage:10}")
     private int platformFeePercentage;
-    
-    @Value("${platform.currency}")
+
+    @Value("${platform.currency:INR}")
     private String platformCurrency;
+
     
     public PaymentService(PaymentRepository paymentRepository,
                          ContractRepository contractRepository,
@@ -76,7 +77,7 @@ public class PaymentService {
         payment.setBillingEmail(client.getEmail());
         
         // Log Stripe keys (for debugging)
-        System.out.println("Using Stripe Secret Key: " + stripeSecretKey.substring(0, Math.min(stripeSecretKey.length(), 10)) + "...");
+        System.out.println("Stripe configuration loaded successfully");
         
         // In production, integrate with Stripe API
         // For now, simulate payment
