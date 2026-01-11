@@ -3,6 +3,8 @@ package com.marketplace.job;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.marketplace.contract.Contract;
 import com.marketplace.user.User;
 
 import jakarta.persistence.Column;
@@ -15,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -60,6 +63,10 @@ public class Job {
     private LocalDateTime createdAt = LocalDateTime.now();
     
     private LocalDateTime deadline;
+
+    @OneToOne(mappedBy = "job", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Contract contract;
 
     // Constructors
     public Job() {}

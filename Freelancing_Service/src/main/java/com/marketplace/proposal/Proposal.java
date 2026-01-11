@@ -3,6 +3,8 @@ package com.marketplace.proposal;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.marketplace.contract.Contract;
 import com.marketplace.job.Job;
 import com.marketplace.user.User;
 
@@ -16,6 +18,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -42,6 +45,11 @@ public class Proposal {
 	
 	@Column(nullable = false)
 	private Integer estimatedDays;
+	
+	@OneToOne(mappedBy = "proposal", fetch = FetchType.LAZY)
+	@JsonIgnore
+	private Contract contract;
+
 	
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)

@@ -32,7 +32,7 @@ public class Contract {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne
 	@JoinColumn(name = "proposal_id", nullable = false, unique = true)
 	private Proposal proposal;
 	
