@@ -34,9 +34,10 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers(
                     "/api/auth/**",
-                    "/api/test/**",
-                    "/api/status",        // Add this
-                    "/api/health",        // Add this
+                    "/api/test/**", 
+                    "/api/",           // ADD THIS
+                    "/api/health",     // ADD THIS
+                    "/api/status", // Add this
                     "/api/jobs/open",
                     "/api/jobs/search",
                     "/api/jobs/{id:[0-9]+}",
