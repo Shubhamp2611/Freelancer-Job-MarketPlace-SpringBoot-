@@ -6,5 +6,9 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/freelance-marketplace-api.jar app.jar
-EXPOSE 8080
+
+# Tell Render to use port 10000
+EXPOSE 10000
+
+# Use the PORT env variable
 CMD ["java", "-jar", "app.jar"]

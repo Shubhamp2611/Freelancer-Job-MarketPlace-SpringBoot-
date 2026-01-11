@@ -1,20 +1,27 @@
 package com.marketplace.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/test")  // This gives /api/test prefix
 public class TestController {
     
-    @GetMapping("/public")  // This becomes /api/test/public
-    public String publicTest() {
-        return "Public endpoint is accessible!";
+    @GetMapping("/")
+    public String home() {
+        return "Freelance Marketplace API is running!";
     }
     
-    @GetMapping("/health")  // This becomes /api/test/health
+    @GetMapping("/api")
+    public String apiRoot() {
+        return "API endpoints available at /api/*";
+    }
+    
+    @GetMapping("/health")
     public String health() {
-        return "Test health endpoint working!";
+        return "{\"status\":\"UP\"}";
+    }
+    
+    @GetMapping("/api/test")
+    public String test() {
+        return "Test endpoint working!";
     }
 }
