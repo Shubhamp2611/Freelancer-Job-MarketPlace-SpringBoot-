@@ -70,10 +70,17 @@ public class EmailService {
     public void sendProposalNotification(String clientEmail, String clientName, 
                                         String freelancerName, String jobTitle) {
         String subject = "New Proposal Received for: " + jobTitle;
-        String text = String.format(
-            "Hello %s,\n\nYou have received a new proposal from %s for your job: %s\n\n" +
-            "Please login to review the proposal.\n\nBest regards,\nFreelance Marketplace Team",
-            clientName, freelancerName, jobTitle
+        String text = (
+                """
+                Hello %s,
+                
+                You have received a new proposal from %s for your job: %s
+                
+                Please login to review the proposal.
+                
+                Best regards,
+                Freelance Marketplace Team""").formatted(
+                clientName, freelancerName, jobTitle
         );
         
         sendSimpleEmail(clientEmail, subject, text);
@@ -83,11 +90,17 @@ public class EmailService {
     public void sendContractNotification(String freelancerEmail, String freelancerName,
                                         String clientName, String jobTitle) {
         String subject = "Congratulations! Your Proposal was Accepted";
-        String text = String.format(
-            "Hello %s,\n\n%s has accepted your proposal for: %s\n\n" +
-            "A contract has been created. Please login to review and accept the contract terms.\n\n" +
-            "Best regards,\nFreelance Marketplace Team",
-            freelancerName, clientName, jobTitle
+        String text = (
+                """
+                Hello %s,
+                
+                %s has accepted your proposal for: %s
+                
+                A contract has been created. Please login to review and accept the contract terms.
+                
+                Best regards,
+                Freelance Marketplace Team""").formatted(
+                freelancerName, clientName, jobTitle
         );
         
         sendSimpleEmail(freelancerEmail, subject, text);

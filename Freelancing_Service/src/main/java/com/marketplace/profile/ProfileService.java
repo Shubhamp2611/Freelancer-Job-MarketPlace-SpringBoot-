@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +27,7 @@ public class ProfileService {
     
     private void createUploadDirectory() {
         try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
+            Files.createDirectories(Path.of(UPLOAD_DIR));
         } catch (IOException e) {
             System.err.println("Failed to create upload directory: " + e.getMessage());
         }
@@ -39,7 +38,7 @@ public class ProfileService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         String fileName = userId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path filePath = Paths.get(UPLOAD_DIR + fileName);
+        Path filePath = Path.of(UPLOAD_DIR + fileName);
         
         Files.copy(file.getInputStream(), filePath);
         

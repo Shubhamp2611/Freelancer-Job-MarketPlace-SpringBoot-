@@ -14,9 +14,9 @@ public class CorsConfig {
     
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
-    
+
     @Bean
-    public CorsFilter corsFilter() {
+    CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));

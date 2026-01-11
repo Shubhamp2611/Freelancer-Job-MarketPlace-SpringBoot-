@@ -87,7 +87,7 @@ public class ProfileController {
     
     // POST: Upload profile picture
     @PostMapping("/picture")
-    public ResponseEntity<Map<String, Object>> uploadProfilePicture(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> uploadProfilePicture(@RequestParam MultipartFile file) {
         try {
             String pictureUrl = profileService.uploadProfilePicture(file, securityUtil.getCurrentUserId());
             

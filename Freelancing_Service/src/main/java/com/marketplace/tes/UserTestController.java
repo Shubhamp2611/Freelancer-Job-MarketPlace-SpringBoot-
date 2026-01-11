@@ -19,9 +19,9 @@ public class UserTestController {
 	
 	@GetMapping("/current-user")
 	public String getCurrentUserInfo() {
-		 return String.format("User ID: %d, Email: %s, Role: %s", 
-		            securityUtil.getCurrentUserId(),
-		            securityUtil.getCurrentUser().getEmail(),
-		            securityUtil.getCurrentUser().getRole());
+		 return "User ID: %d, Email: %s, Role: %s".formatted(
+                 securityUtil.getCurrentUserId(),
+                 securityUtil.getCurrentUser().getEmail(),
+                 securityUtil.getCurrentUser().getRole());
 	}
 }
