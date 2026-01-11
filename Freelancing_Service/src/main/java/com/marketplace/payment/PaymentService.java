@@ -32,7 +32,6 @@ public class PaymentService {
 
     @Value("${platform.currency:INR}")
     private String platformCurrency;
-
     
     public PaymentService(PaymentRepository paymentRepository,
                          ContractRepository contractRepository,
