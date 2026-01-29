@@ -61,4 +61,7 @@ public interface JobRepository extends JpaRepository<Job, Long>{
 
     @Query("SELECT COUNT(c) FROM Contract c WHERE c.status = 'COMPLETED'")
     Long countCompletedContracts();
+    
+ // Add to JobRepository.java
+    List<Job> findAllByOrderByCreatedAtDesc();
 }

@@ -86,6 +86,24 @@ public class ProposalService {
 		return convertToDTO(proposal);
 	}
 	
+	// Add these methods to ProposalService.java
+
+	// Get all proposals
+	public List<ProposalResponseDTO> getAllProposals() {
+	    List<Proposal> proposals = proposalRepository.findAll();
+	    return proposals.stream()
+	            .map(this::convertToDTO)
+	            .collect(Collectors.toList());
+	}
+
+	// Get proposals by status
+	public List<ProposalResponseDTO> getProposalsByStatus(ProposalStatus status) {
+	    List<Proposal> proposals = proposalRepository.findByStatus(status);
+	    return proposals.stream()
+	            .map(this::convertToDTO)
+	            .collect(Collectors.toList());
+	}
+	
 	//Get proposals for a job (client can view all proposals for their job)
 	public List<ProposalResponseDTO> getProposalsForJob(Long jobId, Long clientId){
 		Job job = jobRepository.findById(jobId)

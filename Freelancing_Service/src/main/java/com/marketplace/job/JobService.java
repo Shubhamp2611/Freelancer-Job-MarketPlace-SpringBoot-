@@ -54,6 +54,24 @@ public class JobService {
 		Job job = jobRepository.findById(jobId).orElseThrow(()-> new RuntimeException("Job not found"));
 		return convertToDTO(job);
 	}
+	
+	// Add these methods to JobService.java
+
+	// Get all jobs
+	public List<JobResponseDTO> getAllJobs() {
+	    List<Job> jobs = jobRepository.findAllByOrderByCreatedAtDesc();
+	    return jobs.stream()
+	            .map(this::convertToDTO)
+	            .collect(Collectors.toList());
+	}
+
+	// Get jobs by status
+	public List<JobResponseDTO> getJobsByStatus(JobStatus status) {
+	    List<Job> jobs = jobRepository.findByStatusOrderByCreatedAtDesc(status);
+	    return jobs.stream()
+	            .map(this::convertToDTO)
+	            .collect(Collectors.toList());
+	}
 
 	
 	//Get all open jobs(for freelancers)

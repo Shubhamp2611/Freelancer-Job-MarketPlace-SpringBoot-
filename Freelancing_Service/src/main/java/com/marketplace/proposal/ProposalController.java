@@ -51,6 +51,35 @@ public class ProposalController {
     	return ResponseEntity.ok(proposal);
     }
     
+ // Add these methods to ProposalController.java
+
+ // GET: Get all proposals (ADMIN only or with proper permissions)
+ @GetMapping
+ public ResponseEntity<List<ProposalResponseDTO>> getAllProposals(
+         @RequestParam(required = false) ProposalStatus status) {
+     
+     // Only admins or users with specific roles should access all proposals
+     // For now, we'll allow access but you might want to add security checks
+     
+     List<ProposalResponseDTO> proposals;
+     if (status != null) {
+         proposals = proposalService.getProposalsByStatus(status);
+     } else {
+         proposals = proposalService.getAllProposals();
+     }
+     
+     return ResponseEntity.ok(proposals);
+ }
+
+ // GET: Get proposals by status
+ @GetMapping("/status/{status}")
+ public ResponseEntity<List<ProposalResponseDTO>> getProposalsByStatus(
+         @PathVariable ProposalStatus status) {
+     
+     List<ProposalResponseDTO> proposals = proposalService.getProposalsByStatus(status);
+     return ResponseEntity.ok(proposals);
+ }
+    
     // GET: Get proposals for a specific job (CLIENT only, owner only)
     @GetMapping("/job/{jobId}")
     public ResponseEntity<List<ProposalResponseDTO>> getProposalsForJob(@PathVariable Long jobId){

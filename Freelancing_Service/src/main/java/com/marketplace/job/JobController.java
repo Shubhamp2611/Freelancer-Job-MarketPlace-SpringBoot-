@@ -18,13 +18,34 @@ public class JobController {
     private final JobService jobService;
     private final SecurityUtil securityUtil;  // use securityUtil
     
-    
-    
     public JobController(JobService jobService, SecurityUtil securityUtil) {
 		super();
 		this.jobService = jobService;
 		this.securityUtil = securityUtil;
 	}
+    
+        @GetMapping
+        public ResponseEntity<List<JobResponseDTO>> getAllJobs(
+         @RequestParam(required = false) JobStatus status) {
+     
+           List<JobResponseDTO> jobs;
+           if (status != null) {
+         // Filter by status
+              jobs = jobService.getJobsByStatus(status);
+           } else {
+           // Get all jobs
+              jobs = jobService.getAllJobs();
+           }
+     
+              return ResponseEntity.ok(jobs);
+      }
+
+ // GET: Get jobs by status
+      @GetMapping("/status/{status}")
+      public ResponseEntity<List<JobResponseDTO>> getJobsByStatus(@PathVariable JobStatus status) {
+           List<JobResponseDTO> jobs = jobService.getJobsByStatus(status);
+           return ResponseEntity.ok(jobs);
+      }
 
 	//POST: create a new job (Client only)
     @PostMapping
