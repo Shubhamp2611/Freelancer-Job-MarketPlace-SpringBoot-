@@ -15,20 +15,20 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # ---- Production Stage ----
-FROM eclipse-temurin:17-jre-alpine   
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Install curl for healthcheck
-RUN apk add --no-cache curl          
+RUN apk add --no-cache curl
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 appuser && \
-    adduser --system --uid 1001 --gid 1001 appuser
+# Create a non-root user (Alpine Linux syntax)
+RUN addgroup -g 1001 appuser && \
+    adduser -u 1001 -G appuser -s /bin/sh -D appuser
 
 # Copy the jar from build stage
 COPY --from=build /app/target/Freelancing_Service-0.0.1-SNAPSHOT.jar app.jar
 
-# Create upload directory
+# Create upload directory and set permissions
 RUN mkdir -p /app/uploads && \
     chown -R appuser:appuser /app
 
