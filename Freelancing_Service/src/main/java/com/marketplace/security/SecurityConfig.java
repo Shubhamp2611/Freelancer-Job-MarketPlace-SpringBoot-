@@ -1,6 +1,7 @@
 package com.marketplace.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,118 +13,85 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
+	@Autowired
+	private JwtFilter jwtFilter;
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configure(http))
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // ========== PUBLIC ENDPOINTS ==========
-                // Specific endpoints first (most specific to least specific)
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/health").permitAll()
-                .requestMatchers("/api").permitAll()
-                .requestMatchers("/api/").permitAll()
-                .requestMatchers("/api/health").permitAll()
-                .requestMatchers("/api/status").permitAll()  // ADDED THIS
-                .requestMatchers("/api/test-public").permitAll()  // ADDED THIS
-                .requestMatchers("/api/test-secure").permitAll()  // Let's make this public for testing
-                
-                // Auth endpoints (pattern)
-                .requestMatchers("/api/auth/**").permitAll()
-                
-                // Test endpoints (pattern)
-                .requestMatchers("/api/test/**").permitAll()
-                
-                // Public job endpoints
-                .requestMatchers("/api/jobs/open").permitAll()
-                .requestMatchers("/api/jobs/search").permitAll()
-                .requestMatchers("/api/jobs/{id:[0-9]+}").permitAll()
-                
-                // Swagger/OpenAPI documentation
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/swagger-ui.html").permitAll()
-                
-                // Actuator endpoints (for monitoring)
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/actuator/health/**").permitAll()
-                .requestMatchers("/actuator/info").permitAll()
-                
-                // Uploads directory
-                .requestMatchers("/uploads/**").permitAll()
-                
-                // ========== ROLE-BASED ENDPOINTS ==========
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/client/**").hasRole("CLIENT")
-                .requestMatchers("/api/freelancer/**").hasRole("FREELANCER")
-                
-                // ========== AUTHENTICATED ENDPOINTS ==========
-                // Job endpoints (except the public ones above)
-                .requestMatchers("/api/jobs/**").authenticated()
-                
-                // Proposal endpoints
-                .requestMatchers("/api/proposals/**").authenticated()
-                .requestMatchers("/api/proposals/my-proposals").authenticated()
-                
-                // Contract endpoints
-                .requestMatchers("/api/contracts/**").authenticated()
-                
-                // Payment endpoints
-                .requestMatchers("/api/payments/**").authenticated()
-                
-                // Profile endpoints
-                .requestMatchers("/api/profile/**").authenticated()
-                
-                // ========== CATCH-ALL FOR OTHER /API ENDPOINTS ==========
-                // This should come AFTER all specific /api rules
-                .requestMatchers("/api/**").authenticated()
-                
-                // ========== FINAL CATCH-ALL ==========
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+	@Value("${app.cors.allowed-origins}")
+	private String allowedOrigins;
 
-        return http.build();
-    }
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	    http
+	        .csrf(csrf -> csrf.disable())
+	        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+	        .sessionManagement(session -> session
+	            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	        .authorizeHttpRequests(auth -> auth
+	            // Public endpoints
+	            .requestMatchers("/", "/health", "/api/health", "/api/status").permitAll()
+	            .requestMatchers("/api/auth/**").permitAll()
+	            .requestMatchers("/api/test/**").permitAll()
+	            .requestMatchers("/api/jobs/open", "/api/jobs/search").permitAll()
+	            .requestMatchers("/api/jobs/{id:[0-9]+}").permitAll()
+	            .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
+	            .requestMatchers("/uploads/**").permitAll()
+	            
+	            // Admin endpoints
+	            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+	            
+	            // Role-based endpoints
+	            .requestMatchers("/api/client/**").hasRole("CLIENT")
+	            .requestMatchers("/api/freelancer/**").hasRole("FREELANCER")
+	            
+	            // Authenticated endpoints
+	            .requestMatchers("/api/jobs/**").authenticated()
+	            .requestMatchers("/api/proposals/**").authenticated()
+	            .requestMatchers("/api/contracts/**").authenticated()
+	            .requestMatchers("/api/payments/**").authenticated()
+	            .requestMatchers("/api/profile/**").authenticated()
+	            
+	            .anyRequest().authenticated()
+	        )
+	        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-    @Bean
-    CorsFilter corsFilter() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:3000");
-        config.addAllowedOrigin("http://localhost:8080");
-        config.addAllowedOrigin("http://localhost:10000");  // ADDED THIS
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("DELETE");
-        config.addAllowedMethod("PATCH");
-        config.addAllowedMethod("OPTIONS");
-        config.setMaxAge(3600L);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        
-        return new CorsFilter(source);
-    }
+	    return http.build();
+	}
 
-    @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+	    CorsConfiguration configuration = new CorsConfiguration();
+	    configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+	    configuration.setAllowedHeaders(Arrays.asList(
+	        "Origin", "Content-Type", "Accept", "Authorization", 
+	        "X-Requested-With", "Access-Control-Request-Method", 
+	        "Access-Control-Request-Headers"
+	    ));
+	    configuration.setExposedHeaders(Arrays.asList(
+	        "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials", 
+	        "Authorization", "Content-Disposition", "X-Rate-Limit-Remaining", 
+	        "X-Rate-Limit-Limit"
+	    ));
+	    configuration.setAllowCredentials(true);
+	    configuration.setMaxAge(3600L);
+	    
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", configuration);
+	    return source;
+	}
+
+	@Bean
+	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+	    return config.getAuthenticationManager();
+	}
 }

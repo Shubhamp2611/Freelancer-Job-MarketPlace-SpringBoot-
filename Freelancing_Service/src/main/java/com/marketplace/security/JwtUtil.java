@@ -2,26 +2,45 @@ package com.marketplace.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
+import jakarta.annotation.PostConstruct;
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Base64;
 
 @Component
 public class JwtUtil {
     
-    // Use a simple hardcoded secret for now
-    private final SecretKey key = Keys.hmacShaKeyFor("12345678901234567890123456789012".getBytes());
-    private final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 24 hours 
+    @Value("${app.jwt.secret}")
+    private String jwtSecret;
+    
+    @Value("${app.jwt.expiration-ms}")
+    private long expirationTime;
+    
+    private SecretKey key;
+    
+    @PostConstruct
+    public void init() {
+        // Ensure secret is long enough
+        byte[] keyBytes;
+        if (jwtSecret.length() < 32) {
+            // If secret is too short, use a default (should not happen in production)
+            keyBytes = Base64.getEncoder().encode("thisIsASecretKeyThatIsAtLeast32CharactersLong".getBytes());
+        } else {
+            keyBytes = jwtSecret.getBytes();
+        }
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+        System.out.println("JwtUtil initialized");
+    }
     
     public String generateToken(String email) { 
         return Jwts.builder() 
                .setSubject(email) 
                .setIssuedAt(new Date()) 
-               .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) 
-               .signWith(key, SignatureAlgorithm.HS256) 
+               .setExpiration(new Date(System.currentTimeMillis() + expirationTime)) 
+               .signWith(key) 
                .compact(); 
     } 
     

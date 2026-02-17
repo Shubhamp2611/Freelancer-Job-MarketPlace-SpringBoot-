@@ -78,6 +78,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                
+                // ========== ADD THIS LINE ==========
+                // Set userId attribute for rate limiting filter
+                request.setAttribute("userId", email);
+                // ===================================
             }
         }
         

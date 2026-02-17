@@ -107,6 +107,24 @@ public class ContractService {
         return convertToDTO(contract);
     }
     
+ // Add this missing method to ContractService.java
+    public List<MilestoneResponseDTO> getMilestones1(Long contractId, Long userId) {
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+        
+        // Verify user is part of the contract
+        if (!contract.getClient().getId().equals(userId) && 
+            !contract.getFreelancer().getId().equals(userId)) {
+            throw new RuntimeException("You don't have permission to view milestones");
+        }
+        
+        List<Milestone> milestones = milestoneRepository.findByContractOrderBySequenceAsc(contract);
+        
+        return milestones.stream()
+                .map(this::convertMilestoneToDTO)
+                .collect(Collectors.toList());
+    }
+    
     // Get contracts for current user
     public List<ContractResponseDTO> getMyContracts(Long userId) {
         User user = userRepository.findById(userId)

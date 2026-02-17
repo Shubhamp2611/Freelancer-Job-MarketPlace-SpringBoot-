@@ -54,6 +54,26 @@ public class User {
     
     private String country;
     
+    @Column(nullable = false)
+    private Boolean emailVerified = false;
+
+    private String emailVerificationToken;
+
+    private LocalDateTime emailVerificationTokenExpiry;
+
+    public Boolean getEmailVerified() { return emailVerified; }
+    public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public String getEmailVerificationToken() { return emailVerificationToken; }
+    public void setEmailVerificationToken(String emailVerificationToken) { 
+        this.emailVerificationToken = emailVerificationToken; 
+    }
+
+    public LocalDateTime getEmailVerificationTokenExpiry() { return emailVerificationTokenExpiry; }
+    public void setEmailVerificationTokenExpiry(LocalDateTime emailVerificationTokenExpiry) { 
+        this.emailVerificationTokenExpiry = emailVerificationTokenExpiry; 
+    }
+    
     // Getters and Setters for new fields
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
