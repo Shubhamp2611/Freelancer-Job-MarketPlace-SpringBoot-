@@ -15,11 +15,11 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # ---- Production Stage ----
-FROM openjdk:17-slim
+FROM eclipse-temurin:17-jre-alpine   # ← CHANGED THIS LINE
 WORKDIR /app
 
 # Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl          # ← Alpine uses apk, not apt-get
 
 # Create a non-root user
 RUN addgroup --system --gid 1001 appuser && \
