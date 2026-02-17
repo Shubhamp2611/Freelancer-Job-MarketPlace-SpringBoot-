@@ -1,0 +1,40 @@
+# Compiled files
+*.class
+*.jar
+target/
+build/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Logs
+logs/
+*.log
+
+# Uploads (don't include in build)
+uploads/
+
+# Docker files
+.dockerignore
+Dockerfile
+docker-compose*.yml
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+*.env
+
+# Node modules (if any)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db

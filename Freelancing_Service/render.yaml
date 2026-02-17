@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: freelance-backend
+    runtime: docker
+    repo: https://github.com/yourusername/freelance-backend  # Update this!
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION_MS
+        value: 86400000
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://freelancer-frontend-hdt5efzut-shubhamp2611s-projects.vercel.app
+      - key: DATABASE_URL
+        sync: false  # You'll set this manually from Neon
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+    healthCheckPath: /api/health
+    autoDeploy: true
