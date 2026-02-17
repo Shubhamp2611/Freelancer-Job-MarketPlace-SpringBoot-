@@ -26,7 +26,7 @@ RUN addgroup -g 1001 appuser && \
     adduser -u 1001 -G appuser -s /bin/sh -D appuser
 
 # Copy the jar from build stage
-COPY --from=build /app/target/Freelancing_Service-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/freelance-marketplace-api.jar app.jar
 
 # Create upload directory and set permissions
 RUN mkdir -p /app/uploads && \
